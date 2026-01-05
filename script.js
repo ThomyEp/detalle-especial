@@ -188,65 +188,99 @@ function initializeDragCards() {
     const dragCards = document.querySelectorAll('.drag-card');
     dragCards.forEach(card => {
         const index = parseInt(card.dataset.index);
-        let touchStartY = 0;
+        let startY = 0;
+        let currentY = 0;
         let isDragging = false;
         
-        // Eventos para escritorio
-        card.addEventListener('dragstart', (e) => {
-            if (card.classList.contains('unlocked')) return;
-            dragStartY = e.clientY;
-            card.style.opacity = '0.7';
-        });
-        
-        card.addEventListener('drag', (e) => {
-            if (card.classList.contains('unlocked')) return;
-            if (e.clientY === 0) return;
-            
-            const dragDistance = dragStartY - e.clientY;
-            if (dragDistance > 100) {
-                unlockCard(card, index);
-            }
-        });
-        
-        card.addEventListener('dragend', () => {
-            card.style.opacity = '1';
-        });
-        
-        // Eventos táctiles para móviles
+        // Eventos táctiles para móviles (prioritario)
         card.addEventListener('touchstart', (e) => {
             if (card.classList.contains('unlocked')) return;
-            touchStartY = e.touches[0].clientY;
+            startY = e.touches[0].clientY;
             isDragging = true;
-            card.style.opacity = '0.7';
-            card.style.transition = 'transform 0.1s ease';
-        }, { passive: false });
+            card.style.transition = 'none';
+        }, { passive: true });
         
         card.addEventListener('touchmove', (e) => {
             if (!isDragging || card.classList.contains('unlocked')) return;
-            e.preventDefault(); // Prevenir scroll de la página
             
-            const touchCurrentY = e.touches[0].clientY;
-            const dragDistance = touchStartY - touchCurrentY;
+            currentY = e.touches[0].clientY;
+            const dragDistance = startY - currentY;
             
-            // Aplicar transformación visual mientras arrastra
+            // Solo prevenir scroll si está arrastrando hacia arriba
             if (dragDistance > 0) {
-                card.style.transform = `translateY(-${Math.min(dragDistance, 120)}px)`;
-            }
-            
-            // Desbloquear si arrastró suficiente
-            if (dragDistance > 100) {
-                isDragging = false;
-                unlockCard(card, index);
-                card.style.transform = '';
+                e.preventDefault();
+                // Aplicar transformación visual
+                const moveAmount = Math.min(dragDistance, 150);
+                card.style.transform = `translateY(-${moveAmount}px)`;
+                card.style.opacity = `${1 - (moveAmount / 300)}`;
             }
         }, { passive: false });
         
         card.addEventListener('touchend', () => {
+            if (!isDragging || card.classList.contains('unlocked')) return;
             isDragging = false;
-            card.style.opacity = '1';
-            card.style.transform = '';
-            card.style.transition = '';
-        }, { passive: false });
+            
+            const dragDistance = startY - currentY;
+            
+            // Desbloquear si arrastró más de 80px
+            if (dragDistance > 80) {
+                unlockCard(card, index);
+            } else {
+                // Volver a la posición original con animación
+                card.style.transition = 'all 0.3s ease';
+                card.style.transform = '';
+                card.style.opacity = '1';
+            }
+        }, { passive: true });
+        
+        // Eventos para escritorio (mouse)
+        let mouseStartY = 0;
+        let isMouseDragging = false;
+        
+        card.addEventListener('mousedown', (e) => {
+            if (card.classList.contains('unlocked')) return;
+            mouseStartY = e.clientY;
+            isMouseDragging = true;
+            card.style.transition = 'none';
+            card.style.cursor = 'grabbing';
+        });
+        
+        card.addEventListener('mousemove', (e) => {
+            if (!isMouseDragging || card.classList.contains('unlocked')) return;
+            
+            const dragDistance = mouseStartY - e.clientY;
+            if (dragDistance > 0) {
+                const moveAmount = Math.min(dragDistance, 150);
+                card.style.transform = `translateY(-${moveAmount}px)`;
+                card.style.opacity = `${1 - (moveAmount / 300)}`;
+            }
+        });
+        
+        card.addEventListener('mouseup', (e) => {
+            if (!isMouseDragging || card.classList.contains('unlocked')) return;
+            isMouseDragging = false;
+            card.style.cursor = 'grab';
+            
+            const dragDistance = mouseStartY - e.clientY;
+            
+            if (dragDistance > 80) {
+                unlockCard(card, index);
+            } else {
+                card.style.transition = 'all 0.3s ease';
+                card.style.transform = '';
+                card.style.opacity = '1';
+            }
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            if (isMouseDragging && !card.classList.contains('unlocked')) {
+                isMouseDragging = false;
+                card.style.cursor = 'grab';
+                card.style.transition = 'all 0.3s ease';
+                card.style.transform = '';
+                card.style.opacity = '1';
+            }
+        });
     });
 }
 

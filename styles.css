@@ -878,6 +878,12 @@ body {
     position: relative;
     text-align: center;
     overflow: hidden;
+    touch-action: none;
+    user-select: none;
+}
+
+.drag-card {
+    cursor: grab;
 }
 
 .card::before {
