@@ -188,7 +188,10 @@ function initializeDragCards() {
     const dragCards = document.querySelectorAll('.drag-card');
     dragCards.forEach(card => {
         const index = parseInt(card.dataset.index);
+        let touchStartY = 0;
+        let isDragging = false;
         
+        // Eventos para escritorio
         card.addEventListener('dragstart', (e) => {
             if (card.classList.contains('unlocked')) return;
             dragStartY = e.clientY;
@@ -208,6 +211,42 @@ function initializeDragCards() {
         card.addEventListener('dragend', () => {
             card.style.opacity = '1';
         });
+        
+        // Eventos táctiles para móviles
+        card.addEventListener('touchstart', (e) => {
+            if (card.classList.contains('unlocked')) return;
+            touchStartY = e.touches[0].clientY;
+            isDragging = true;
+            card.style.opacity = '0.7';
+            card.style.transition = 'transform 0.1s ease';
+        }, { passive: false });
+        
+        card.addEventListener('touchmove', (e) => {
+            if (!isDragging || card.classList.contains('unlocked')) return;
+            e.preventDefault(); // Prevenir scroll de la página
+            
+            const touchCurrentY = e.touches[0].clientY;
+            const dragDistance = touchStartY - touchCurrentY;
+            
+            // Aplicar transformación visual mientras arrastra
+            if (dragDistance > 0) {
+                card.style.transform = `translateY(-${Math.min(dragDistance, 120)}px)`;
+            }
+            
+            // Desbloquear si arrastró suficiente
+            if (dragDistance > 100) {
+                isDragging = false;
+                unlockCard(card, index);
+                card.style.transform = '';
+            }
+        }, { passive: false });
+        
+        card.addEventListener('touchend', () => {
+            isDragging = false;
+            card.style.opacity = '1';
+            card.style.transform = '';
+            card.style.transition = '';
+        }, { passive: false });
     });
 }
 
