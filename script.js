@@ -183,104 +183,73 @@ function initializeCardHoverEffects() {
     });
 }
 
-// Inicializar tarjetas arrastrables
+// Inicializar tarjetas con mantener presionado
 function initializeDragCards() {
-    const dragCards = document.querySelectorAll('.drag-card');
-    dragCards.forEach(card => {
+    const holdCards = document.querySelectorAll('.hold-card');
+    holdCards.forEach(card => {
         const index = parseInt(card.dataset.index);
-        let startY = 0;
-        let currentY = 0;
-        let isDragging = false;
+        const progressFill = card.querySelector('.progress-fill');
+        let holdTimer = null;
+        let holdProgress = 0;
+        let progressInterval = null;
+        const HOLD_DURATION = 2000; // 2 segundos
         
-        // Eventos táctiles para móviles (prioritario)
-        card.addEventListener('touchstart', (e) => {
+        function startHold() {
             if (card.classList.contains('unlocked')) return;
-            startY = e.touches[0].clientY;
-            isDragging = true;
-            card.style.transition = 'none';
-        }, { passive: true });
+            
+            holdProgress = 0;
+            progressFill.style.width = '0%';
+            
+            // Iniciar la animación de progreso
+            const startTime = Date.now();
+            progressInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                holdProgress = Math.min((elapsed / HOLD_DURATION) * 100, 100);
+                progressFill.style.width = holdProgress + '%';
+                
+                // Agregar efecto de pulso a la tarjeta
+                card.style.transform = `scale(${1 + (holdProgress / 1000)})`;
+                
+                if (holdProgress >= 100) {
+                    clearInterval(progressInterval);
+                    unlockCard(card, index);
+                }
+            }, 10);
+        }
         
-        card.addEventListener('touchmove', (e) => {
-            if (!isDragging || card.classList.contains('unlocked')) return;
-            
-            currentY = e.touches[0].clientY;
-            const dragDistance = startY - currentY;
-            
-            // Solo prevenir scroll si está arrastrando hacia arriba
-            if (dragDistance > 0) {
-                e.preventDefault();
-                // Aplicar transformación visual
-                const moveAmount = Math.min(dragDistance, 150);
-                card.style.transform = `translateY(-${moveAmount}px)`;
-                card.style.opacity = `${1 - (moveAmount / 300)}`;
+        function stopHold() {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
             }
+            if (holdTimer) {
+                clearTimeout(holdTimer);
+                holdTimer = null;
+            }
+            
+            // Animar el retroceso de la barra
+            progressFill.style.transition = 'width 0.3s ease';
+            progressFill.style.width = '0%';
+            card.style.transform = '';
+            
+            setTimeout(() => {
+                progressFill.style.transition = 'width 0.1s linear';
+            }, 300);
+        }
+        
+        // Eventos táctiles para móviles
+        card.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startHold();
         }, { passive: false });
         
-        card.addEventListener('touchend', () => {
-            if (!isDragging || card.classList.contains('unlocked')) return;
-            isDragging = false;
-            
-            const dragDistance = startY - currentY;
-            
-            // Desbloquear si arrastró más de 80px
-            if (dragDistance > 80) {
-                unlockCard(card, index);
-            } else {
-                // Volver a la posición original con animación
-                card.style.transition = 'all 0.3s ease';
-                card.style.transform = '';
-                card.style.opacity = '1';
-            }
-        }, { passive: true });
+        card.addEventListener('touchend', stopHold, { passive: true });
+        card.addEventListener('touchcancel', stopHold, { passive: true });
         
-        // Eventos para escritorio (mouse)
-        let mouseStartY = 0;
-        let isMouseDragging = false;
-        
-        card.addEventListener('mousedown', (e) => {
-            if (card.classList.contains('unlocked')) return;
-            mouseStartY = e.clientY;
-            isMouseDragging = true;
-            card.style.transition = 'none';
-            card.style.cursor = 'grabbing';
-        });
-        
-        card.addEventListener('mousemove', (e) => {
-            if (!isMouseDragging || card.classList.contains('unlocked')) return;
-            
-            const dragDistance = mouseStartY - e.clientY;
-            if (dragDistance > 0) {
-                const moveAmount = Math.min(dragDistance, 150);
-                card.style.transform = `translateY(-${moveAmount}px)`;
-                card.style.opacity = `${1 - (moveAmount / 300)}`;
-            }
-        });
-        
-        card.addEventListener('mouseup', (e) => {
-            if (!isMouseDragging || card.classList.contains('unlocked')) return;
-            isMouseDragging = false;
-            card.style.cursor = 'grab';
-            
-            const dragDistance = mouseStartY - e.clientY;
-            
-            if (dragDistance > 80) {
-                unlockCard(card, index);
-            } else {
-                card.style.transition = 'all 0.3s ease';
-                card.style.transform = '';
-                card.style.opacity = '1';
-            }
-        });
-        
-        card.addEventListener('mouseleave', () => {
-            if (isMouseDragging && !card.classList.contains('unlocked')) {
-                isMouseDragging = false;
-                card.style.cursor = 'grab';
-                card.style.transition = 'all 0.3s ease';
-                card.style.transform = '';
-                card.style.opacity = '1';
-            }
-        });
+        // Eventos para escritorio
+        card.addEventListener('mousedown', startHold);
+        card.addEventListener('mouseup', stopHold);
+        card.addEventListener('mouseleave', stopHold);
     });
 }
 
