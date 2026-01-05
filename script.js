@@ -568,7 +568,14 @@ function createBalloon(word, index, container) {
     const balloon = document.createElement('div');
     balloon.className = 'balloon';
     
-    const randomX = Math.random() * (container.offsetWidth - 100);
+    // Calcular posición con margen de seguridad
+    const containerWidth = container.offsetWidth;
+    const balloonWidth = 100; // Ancho aproximado del globo
+    const margin = 40; // Margen de seguridad
+    const minX = margin;
+    const maxX = containerWidth - balloonWidth - margin;
+    const randomX = minX + Math.random() * (maxX - minX);
+    
     balloon.style.left = randomX + 'px';
     balloon.style.bottom = '-120px';
     
@@ -659,8 +666,23 @@ function showRevealedWord(word, balloon, container) {
     const rect = balloon.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
     
-    wordEl.style.left = (rect.left - containerRect.left + 40) + 'px';
-    wordEl.style.top = (rect.top - containerRect.top + 50) + 'px';
+    // Calcular posición centrada en el globo
+    let leftPos = rect.left - containerRect.left + 40;
+    let topPos = rect.top - containerRect.top + 50;
+    
+    // Aplicar límites para que no salga del contenedor
+    const wordWidth = 150; // Ancho aproximado de la palabra
+    const wordHeight = 40; // Alto aproximado
+    const margin = 20;
+    
+    // Ajustar horizontalmente
+    leftPos = Math.max(margin, Math.min(leftPos, containerRect.width - wordWidth - margin));
+    
+    // Ajustar verticalmente
+    topPos = Math.max(margin, Math.min(topPos, containerRect.height - wordHeight - margin));
+    
+    wordEl.style.left = leftPos + 'px';
+    wordEl.style.top = topPos + 'px';
     
     container.appendChild(wordEl);
     
