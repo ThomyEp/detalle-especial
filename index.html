@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Un Detalle Especial Para Ti 💕</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Pantalla de inicio -->
+    <div class="start-overlay" id="startOverlay">
+        <canvas id="particleCanvas"></canvas>
+        <i class="heart-icon fas fa-heart"></i>
+        <h1 class="main-title">Para Alguien Especial</h1>
+        <p class="main-subtitle">Una experiencia creada con cariño</p>
+        <button class="start-btn" onclick="startExperience()">
+            <span>Descubrir</span>
+            <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+    
+    <!-- Reproductor de música de fondo -->
+    <audio id="musicPlayer" loop>
+        <source src="pista_fondo.mp4" type="audio/mp4">
+        Tu navegador no soporta audio HTML5.
+    </audio>
+    
+    <!-- Botón de música flotante -->
+    <button class="music-button" id="musicButton" onclick="toggleMusic()">
+        <i class="fas fa-music"></i>
+    </button>
+    
+    <!-- Fondo de corazones flotantes -->
+    <div class="hearts-container" id="heartsContainer"></div>
+    <div class="stars-container" id="starsContainer"></div>
+    
+    <!-- Contenedor principal -->
+    <div class="container">
+        <!-- Sección 1: Tarjetas 1 y 2 -->
+        <div class="section active" id="section1">
+            <div class="cards-container">
+                <!-- Tarjetas 1 y 2: Arrastrar hacia arriba -->
+                <div class="card drag-card" data-index="0" draggable="true">
+                    <div class="card-lock"><i class="fas fa-lock"></i></div>
+                    <div class="card-glow"></div>
+                    <div class="card-icon">💕</div>
+                    <div class="card-hint"><i class="fas fa-arrow-up"></i> Arrastra hacia arriba</div>
+                    <div class="card-message hidden" id="message0"></div>
+                </div>
+                <div class="card drag-card" data-index="1" draggable="true">
+                    <div class="card-lock"><i class="fas fa-lock"></i></div>
+                    <div class="card-glow"></div>
+                <div class="card-icon">✨</div>
+                <div class="card-hint"><i class="fas fa-arrow-up"></i> Arrastra hacia arriba</div>
+                <div class="card-message hidden" id="message1"></div>
+            </div>
+            </div>
+            <button class="continue-btn" onclick="goToSection(2)">
+                <span>Continuar</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+            
+        <!-- Sección 2: Tarjetas 3 y 4 -->
+        <div class="section" id="section2">
+            <div class="cards-container">
+                <!-- Tarjetas 3 y 4: Efecto raspadita -->
+                <div class="card scratch-card" data-index="2">
+                    <div class="card-glow"></div>
+                    <div class="card-icon">🌸</div>
+                    <div class="card-hint"><i class="fas fa-hand-pointer"></i> Raspa para descubrir</div>
+                    <canvas class="scratch-canvas"></canvas>
+                    <div class="card-message" id="message2"></div>
+                </div>
+                <div class="card scratch-card" data-index="3">
+                    <div class="card-glow"></div>
+                    <div class="card-icon">💝</div>
+                    <div class="card-hint"><i class="fas fa-hand-pointer"></i> Raspa para descubrir</div>
+                    <canvas class="scratch-canvas"></canvas>
+                    <div class="card-message" id="message3"></div>
+                </div>
+            </div>
+            <button class="continue-btn" onclick="goToSection(3)">
+                <span>Continuar</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+            
+        <!-- Sección 3: Tarjetas 5 y 6 -->
+        <div class="section" id="section3">
+            <div class="cards-container">
+                <!-- Tarjetas 5 y 6: Sacudir/Agitar (5 veces) -->
+                <div class="card shake-card" data-index="4">
+                    <div class="card-lock"><i class="fas fa-lock"></i></div>
+                    <div class="card-glow"></div>
+                    <div class="card-icon">🌹</div>
+                    <div class="card-hint"><i class="fas fa-hand-sparkles"></i> ¡Sacude esta tarjeta!</div>
+                    <div class="shake-counter">0/5</div>
+                    <div class="card-message hidden" id="message4"></div>
+                </div>
+                <div class="card shake-card" data-index="5">
+                    <div class="card-lock"><i class="fas fa-lock"></i></div>
+                    <div class="card-glow"></div>
+                    <div class="card-icon">💖</div>
+                    <div class="card-hint"><i class="fas fa-hand-sparkles"></i> ¡Sacude esta tarjeta!</div>
+                    <div class="shake-counter">0/5</div>
+                    <div class="card-message hidden" id="message5"></div>
+                </div>
+            </div>
+            <button class="continue-btn" onclick="goToSection(4)">
+                <span>Continuar</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        
+        <!-- Sección 4: Juego de Globos -->
+        <div class="section" id="section4">
+            <div class="game-header">
+                <h2 class="game-title">Descubre palabras especiales</h2>
+                <p class="game-subtitle">Haz click en los globos para descubrir lo que pienso de ti 🎈</p>
+            </div>
+            <div class="balloons-container" id="balloonsContainer"></div>
+            <button class="continue-btn hidden" id="finalContinueBtn" onclick="goToSection(5)">
+                <span>Continuar</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        
+        <!-- Sección 5: Mensaje Final -->
+        <div class="section" id="section5">
+            <div class="final-message-section">
+                <i class="fas fa-heart" style="font-size: 4em; color: #ff6b9d; margin-bottom: 30px; animation: heartbeat 1.5s ease-in-out infinite;"></i>
+                <h2 class="final-title">Eres todo esto y mucho más</h2>
+                <div class="decorative-line" style="margin: 30px auto;"></div>
+                <h3 class="final-subtitle"></h3>
+                <p class="final-text">Feliz año nuevo que tus metas y sueños los puedas cumplir....</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
