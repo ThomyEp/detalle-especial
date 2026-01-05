@@ -207,9 +207,6 @@ function initializeDragCards() {
                 holdProgress = Math.min((elapsed / HOLD_DURATION) * 100, 100);
                 progressFill.style.width = holdProgress + '%';
                 
-                // Agregar efecto de pulso a la tarjeta
-                card.style.transform = `scale(${1 + (holdProgress / 1000)})`;
-                
                 if (holdProgress >= 100) {
                     clearInterval(progressInterval);
                     unlockCard(card, index);
@@ -230,7 +227,6 @@ function initializeDragCards() {
             // Animar el retroceso de la barra
             progressFill.style.transition = 'width 0.3s ease';
             progressFill.style.width = '0%';
-            card.style.transform = '';
             
             setTimeout(() => {
                 progressFill.style.transition = 'width 0.1s linear';
